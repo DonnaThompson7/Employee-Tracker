@@ -198,23 +198,23 @@ const addRole = () => {
 
 // add an employee
 const addEmployee = () => {
-  let roles;
-  let employees;
+  // let roles;
+  // let employees;
   db.query("select id, title from role;", (err, data) => {
     if (err) {
       throw err;
     }
-    roles = data;
-    db.query("select id, first_name, last_name from employee;", (err, data) => {
-      if (err) {
-        throw err;
-      }
-      employees = data;
-      // TODO: add "None" to employees
-      // employees.push({id: (9), first_name: "None"});
+    let roles = data;
+    console.log(roles);
 
-      console.log(employees);
-      console.log(roles);
+    // db.query("select id, first_name, last_name from employee;", (err, data) => {
+    //   if (err) {
+    //     throw err;
+    //   }
+    //   employees = data;
+    //   // TODO: add "None" to employees
+    //   // employees.push({id: (employees.length++), first_name: "None"});
+    //   console.log(employees);
 
       inquirer
         .prompt([
@@ -234,15 +234,16 @@ const addEmployee = () => {
             name: "roleId",
             choices: roles,
           },
-          {
-            type: "list",
-            message: "Who is the employee manager?",
-            name: "mgrEmpId",
-            choices: employees,
-          },
+          // {
+          //   type: "list",
+          //   message: "Who is the employee manager?",
+          //   name: "mgrEmpId",
+          //   choices: employees,
+          // },
         ])
         .then((response) => {
-          const query = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (${response.firstName}, ${response.lastName}, ${response.roleId}, ${mgrEmpId});`;
+          //cut out:      , ${mgrEmpId}
+          const query = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (${response.firstName}, ${response.lastName}, ${response.roleId});`;
           db.query(query, (err, data) => {
             if (err) {
               throw err;
@@ -257,7 +258,7 @@ const addEmployee = () => {
             main();
           });
         });
-    });
+    // });
   });
 };
 
