@@ -198,21 +198,21 @@ const addRole = () => {
 
 // add an employee
 const addEmployee = () => {
-  // let roles;
-  // let employees;
+  let roles;
+  let employees;
   db.query("select id, title from role;", (err, data) => {
     if (err) {
       throw err;
     }
-    let roles = data;
-    console.log(roles);
-    db.query("select id, first_name from employee;", (err, data) => {
+    roles = data;
+    db.query("select id, first_name, last_name from employee;", (err, data) => {
       if (err) {
         throw err;
       }
       employees = data;
       // TODO: add "None" to employees
       // employees.push({id: (9), first_name: "None"});
+
       console.log(employees);
       console.log(roles);
 
@@ -261,7 +261,7 @@ const addEmployee = () => {
   });
 };
 
-// // update an employee role
+// // update an employee role - need to finish this...
 //   const updateEmployeeRole = (employeeIdInput, roleIdInput) => {
 //     const query = `update employee set role_id = ${roleIdInput} where id = ${employeeIdInput}`;
 //   db.query(query, (err, data) => {
