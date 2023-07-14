@@ -52,28 +52,7 @@ const performAction = (action) => {
       addEmployee();
       return;
     case "Update Employee Role":
-      inquirer
-        .prompt([
-          {
-            type: "list",
-            message: "Which employee role do you want to update?",
-            name: "empId",
-            // TODO: does this work?
-            choices: [viewAllEmployees()],
-          },
-          {
-            type: "list",
-            message:
-              "Which role do you want to assign to the selected employee?",
-            name: "roleId",
-            // TODO: does this work?
-            choices: [],
-          },
-        ])
-        .then((response) => {
-          updateEmployeeRole(data.empId, data.roleId);
-          console.log("Updated employee role in the database");
-        });
+      updateEmployeeRole();
       return;
     case "View All Roles":
       viewAllRoles();
@@ -157,7 +136,6 @@ const addRole = () => {
       throw err;
     }
     const departments = data;
-    console.log(departments);
     inquirer
       .prompt([
         {
@@ -198,24 +176,29 @@ const addRole = () => {
 
 // add an employee
 const addEmployee = () => {
-  // let roles;
-  // let employees;
+  let roles;
+  let employees;
   db.query("select id, title from role;", (err, data) => {
     if (err) {
       throw err;
     }
-    let roles = data;
-    console.log(roles);
-
-    // db.query("select id, first_name, last_name from employee;", (err, data) => {
-    //   if (err) {
-    //     throw err;
-    //   }
-    //   employees = data;
-    //   // TODO: add "None" to employees
-    //   // employees.push({id: (employees.length++), first_name: "None"});
-    //   console.log(employees);
-
+    roles = data;
+    db.query("select id, concat(first_name, ' ', last_name) as empName from employee;", (err, data) => {
+      if (err) {
+        throw err;
+      }
+      employees = data;
+      // TODO: add "None" to employees
+      // employees.push({id: (employees.length++), first_name: "None"});
+      console.log(employees);
+      const roleChoices = roles.map(({ id, title }) => ({
+        name: title,
+        value: id
+      }));
+      const employeeChoices = employees.map(({ id, empName }) => ({
+        name: empName,
+        value: id
+      }));
       inquirer
         .prompt([
           {
@@ -232,47 +215,80 @@ const addEmployee = () => {
             type: "list",
             message: "What is the employee role?",
             name: "roleId",
-            choices: roles,
+            choices: roleChoices,
           },
-          // {
-          //   type: "list",
-          //   message: "Who is the employee manager?",
-          //   name: "mgrEmpId",
-          //   choices: employees,
-          // },
+          {
+            type: "list",
+            message: "Who is the employee manager?",
+            name: "mgrEmpId",
+            choices: employeeChoices,
+          },
         ])
         .then((response) => {
-          //cut out:      , ${mgrEmpId}
-          const query = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (${response.firstName}, ${response.lastName}, ${response.roleId});`;
+          const query = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ("${response.firstName}", "${response.lastName}", ${response.roleId}, ${response.mgrEmpId});`;
           db.query(query, (err, data) => {
             if (err) {
               throw err;
             }
-            console.log(
-              "Added employee: " +
-                data.first_name +
-                " " +
-                data.last_name +
-                " to the database"
-            );
+            console.log("Added employee to the database");
             main();
           });
         });
-    // });
+    });
   });
 };
 
-// // update an employee role - need to finish this...
-//   const updateEmployeeRole = (employeeIdInput, roleIdInput) => {
-//     const query = `update employee set role_id = ${roleIdInput} where id = ${employeeIdInput}`;
-//   db.query(query, (err, data) => {
-//     if (err) {
-//       throw err;
-//     }
-//     console.log("Updated " + employeeIdInput + " in the database");
-//     main();
-//   });
-// }
+// update an employee role
+const updateEmployeeRole = () => {
+  let roles;
+  let employees;
+  db.query("select id, title from role;", (err, data) => {
+    if (err) {
+      throw err;
+    }
+    roles = data;
+    db.query("select id, concat(first_name, ' ', last_name) as empName from employee;", (err, data) => {
+      if (err) {
+        throw err;
+      }
+      employees = data;
+      console.log(employees);
+      const roleChoices = roles.map(({ id, title }) => ({
+        name: title,
+        value: id
+      }));
+      const employeeChoices = employees.map(({ id, empName }) => ({
+        name: empName,
+        value: id
+      }));
+      inquirer
+        .prompt([
+          {
+            type: "list",
+            message: "For which employee do you want to update the role?",
+            name: "empId",
+            choices: employeeChoices,
+          },
+          {
+            type: "list",
+            message: "Which role do you want to assign to the selected employee?",
+            name: "roleId",
+            choices: roleChoices,
+          },
+        ])
+        .then((response) => {
+          const query = `UPDATE employee SET role_id = ${response.roleId} where id = ${response.empId};`;
+          db.query(query, (err, data) => {
+            if (err) {
+              throw err;
+            }
+            console.log("Updated employee role in the database");
+            main();
+          });
+        });
+    });
+  });
+};
 
 // Function call to initialize app
 init();
