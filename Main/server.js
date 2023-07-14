@@ -38,7 +38,6 @@ const main = () => {
       },
     ])
     .then((response) => {
-      console.log(response);
       performAction(response.action);
     });
 };
@@ -77,7 +76,7 @@ const performAction = (action) => {
         });
       return;
     case "Quit":
-      return;
+      process.exit();
     default:
       return;
   }
@@ -189,8 +188,7 @@ const addEmployee = () => {
       }
       employees = data;
       // TODO: add "None" to employees
-      // employees.push({id: (employees.length++), first_name: "None"});
-      console.log(employees);
+      employees.push({id: (employees.length + 1), empName: "None"});
       const roleChoices = roles.map(({ id, title }) => ({
         name: title,
         value: id
@@ -225,7 +223,11 @@ const addEmployee = () => {
           },
         ])
         .then((response) => {
-          const query = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ("${response.firstName}", "${response.lastName}", ${response.roleId}, ${response.mgrEmpId});`;
+          let mgrEmpIdValue;
+          if (employees.length === response.mgrEmpId) {
+            mgrEmpIdValue = null;
+          } else {mgrEmpIdValue = response.mgrEmpId;}
+          const query = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ("${response.firstName}", "${response.lastName}", ${response.roleId}, ${mgrEmpIdValue});`;
           db.query(query, (err, data) => {
             if (err) {
               throw err;
@@ -252,7 +254,6 @@ const updateEmployeeRole = () => {
         throw err;
       }
       employees = data;
-      console.log(employees);
       const roleChoices = roles.map(({ id, title }) => ({
         name: title,
         value: id
